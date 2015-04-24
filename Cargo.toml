@@ -1,0 +1,21 @@
+[package]
+name = "automaton"
+version = "0.0.1"
+authors = ["Carl Lerche <me@carllerche.com>"]
+
+
+[features]
+bench = []
+
+[dev-dependencies]
+regex = "0.1.29"
+
+[[test]]
+
+name = "test"
+path = "test/test.rs"
+
+[[bench]]
+
+name = "bench"
+path = "bench/bench.rs"

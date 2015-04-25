@@ -1,8 +1,19 @@
 [package]
-name = "automaton"
-version = "0.0.1"
-authors = ["Carl Lerche <me@carllerche.com>"]
-
+name          = "automaton"
+version       = "0.0.1"
+license       = "MIT"
+authors       = ["Carl Lerche <me@carllerche.com>"]
+description   = "Parse regular languages"
+homepage      = "https://github.com/carllerche/automaton"
+repository    = "https://github.com/carllerche/automaton"
+readme        = "README.md"
+keywords      = ["automaton", "regex", "parser"]
+exclude       = [
+  ".gitignore",
+  ".travis.yml",
+  "deploy.sh",
+  "test/**/*",
+]
 
 [features]
 bench = []

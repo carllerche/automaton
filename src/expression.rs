@@ -171,6 +171,18 @@ impl<T: Token> Expression<T> {
         self.into()
     }
 
+    /*
+     *
+     * ===== Inspection helpers =====
+     *
+     */
+
+    pub fn alphabet(&self) -> Vec<T> {
+        self.alphabet.iter()
+            .map(|r| <T as Token>::from_range(r))
+            .collect()
+    }
+
     // Optimize the representation of the automaton
     fn optimize(&mut self, ctx: &Context) {
         // Ensure the alphabet tokens are disjoint
@@ -792,13 +804,13 @@ impl Alphabet {
             }
 
             for j in i+1..tokens.len() {
-                if tokens[j].is_none() {
+                if tokens[i].is_none() || tokens[j].is_none() {
                     continue;
                 }
 
                 let new = disjoint(
-                    tokens[i].as_ref().unwrap(),
-                    tokens[j].as_ref().unwrap());
+                    tokens[i].as_ref().expect("token[i] is none"),
+                    tokens[j].as_ref().expect("token[j] is none"));
 
                 if let Some(new) = new {
                     tokens[i].take();

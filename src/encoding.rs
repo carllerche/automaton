@@ -28,6 +28,10 @@ impl Ascii {
                 c.into()
             }))
     }
+
+    pub fn any() -> Expression<Ascii> {
+        Expression::token(Ascii::new(0..128))
+    }
 }
 
 impl Token for Ascii {
@@ -59,8 +63,14 @@ impl fmt::Debug for Ascii {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         use std::str;
 
-        fn debug(byte: &[u8]) -> &str {
-            str::from_utf8(byte).unwrap_or("?")
+        fn debug(byte: &[u8]) -> String {
+            if byte == [9] {
+                "\\t".to_string()
+            } else if byte[0] < 32 || byte == [127] {
+                format!("\\{}", byte[0])
+            } else {
+                str::from_utf8(byte).unwrap_or("?").to_string()
+            }
         }
 
         let start = [self.bytes.start];

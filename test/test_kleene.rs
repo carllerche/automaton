@@ -14,3 +14,23 @@ pub fn test_simple_kleene_star() {
         assert!(!machine.parse(s), "parsed `{}`", s);
     }
 }
+
+#[test]
+pub fn test_simple_non_determinism() {
+    let machine = Ascii::exact("ab")
+        .kleene()
+        .concat(Ascii::exact("ac"))
+        .compile();
+
+    for s in ["ac", "abac", "ababac"].iter() {
+        assert!(machine.parse(s), "failed to parse `{}`", s);
+    }
+}
+
+#[test]
+pub fn test_any_non_determinism() {
+    let machine = Ascii::any()
+        .kleene()
+        .concat(Ascii::exact("FIN"))
+        .compile();
+}

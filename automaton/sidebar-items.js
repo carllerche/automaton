@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["encoding",""]],"struct":[["Automaton",""],["Expression",""]],"trait":[["Input",""],["Token","A set of input values for a state machine"]]});
+initSidebarItems({"mod":[["encoding",""]],"trait":[["Input",""],["Token","A set of input values for a state machine"]],"struct":[["Automaton",""],["Expression",""]]});

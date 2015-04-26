@@ -4,6 +4,7 @@ version       = "0.0.1"
 license       = "MIT"
 authors       = ["Carl Lerche <me@carllerche.com>"]
 description   = "Parse regular languages"
+documentation = "http://carllerche.github.io/automaton/automaton"
 homepage      = "https://github.com/carllerche/automaton"
 repository    = "https://github.com/carllerche/automaton"
 readme        = "README.md"

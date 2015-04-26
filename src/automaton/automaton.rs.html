@@ -156,6 +156,8 @@
 <span id="114">114</span>
 <span id="115">115</span>
 <span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> {<span class='ident'>info</span>, <span class='ident'>Token</span>, <span class='ident'>Input</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>iter</span>, <span class='ident'>usize</span>};
@@ -165,13 +167,14 @@
 <span class='kw'>const</span> <span class='ident'>MAX_LOOKUP_TABLE</span>: <span class='ident'>u32</span> <span class='op'>=</span> <span class='number'>255</span>;
 <span class='kw'>const</span> <span class='ident'>INVALID</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='ident'>usize</span>::<span class='ident'>MAX</span>;
 
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span><span class='op'>&gt;</span> {
     <span class='ident'>states</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>State</span><span class='op'>&gt;</span>,
     <span class='ident'>start</span>: <span class='ident'>usize</span>,
-    <span class='ident'>phantom</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
+    <span class='ident'>token</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
+    <span class='ident'>state</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span>,
 }
 
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>compile</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Token</span><span class='op'>&gt;</span>(<span class='ident'>info</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>info</span>::<span class='ident'>State</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>compile</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Token</span>, <span class='ident'>S</span><span class='op'>&gt;</span>(<span class='ident'>info</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>info</span>::<span class='ident'>State</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>states</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>State</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>info</span>.<span class='ident'>iter</span>()
         .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>state</span><span class='op'>|</span> {
             <span class='ident'>State</span> {
@@ -189,11 +192,12 @@
     <span class='ident'>Automaton</span> {
         <span class='ident'>states</span>: <span class='ident'>states</span>,
         <span class='ident'>start</span>: <span class='ident'>start</span>,
-        <span class='ident'>phantom</span>: <span class='ident'>PhantomData</span>,
+        <span class='ident'>token</span>: <span class='ident'>PhantomData</span>,
+        <span class='ident'>state</span>: <span class='ident'>PhantomData</span>,
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Token</span><span class='op'>&gt;</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Token</span>, <span class='ident'>S</span><span class='op'>&gt;</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span><span class='op'>&gt;</span> {
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>eval</span><span class='op'>&lt;</span><span class='ident'>I</span>, <span class='ident'>J</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>input</span>: <span class='ident'>I</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span>
             <span class='kw'>where</span> <span class='ident'>I</span>: <span class='ident'>Iterator</span><span class='op'>&lt;</span><span class='ident'>Item</span><span class='op'>=</span><span class='ident'>J</span><span class='op'>&gt;</span>,
                   <span class='ident'>J</span>: <span class='ident'>Input</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {

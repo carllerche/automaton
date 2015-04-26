@@ -34,6 +34,8 @@ pub trait Input<T: Token> {
     fn as_u32(&self) -> u32;
 }
 
+type Action<S> = Box<Fn(&mut S)>;
+
 /// Used for compiling an expression
 mod info {
     use std::ops;

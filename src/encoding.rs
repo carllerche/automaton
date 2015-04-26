@@ -10,7 +10,7 @@ pub struct Ascii {
 }
 
 impl Ascii {
-    pub fn of<T: Into<Ascii>>(v: T) -> Expression<Ascii> {
+    pub fn of<T: Into<Ascii>, S>(v: T) -> Expression<Ascii, S> {
         Expression::token(v.into())
     }
 
@@ -21,7 +21,7 @@ impl Ascii {
 
     /// Returns an automaton that matches the given string. Panics if the
     /// string is not valid ASCII.
-    pub fn exact(s: &str) -> Expression<Ascii> {
+    pub fn exact<S>(s: &str) -> Expression<Ascii, S> {
         Expression::sequence(
             s.chars().map(|c| {
                 assert!(c.is_ascii(), "invalid ASCII character");
@@ -29,7 +29,7 @@ impl Ascii {
             }))
     }
 
-    pub fn any() -> Expression<Ascii> {
+    pub fn any<S>() -> Expression<Ascii, S> {
         Expression::token(Ascii::new(0..128))
     }
 }
@@ -96,7 +96,7 @@ impl Input<Ascii> for char {
     }
 }
 
-impl Automaton<Ascii> {
+impl<S> Automaton<Ascii, S> {
     pub fn parse(&self, s: &str) -> bool {
         self.eval(s.chars())
     }

@@ -6,13 +6,14 @@ use std::marker::PhantomData;
 const MAX_LOOKUP_TABLE: u32 = 255;
 const INVALID: usize = usize::MAX;
 
-pub struct Automaton<T> {
+pub struct Automaton<T, S> {
     states: Vec<State>,
     start: usize,
-    phantom: PhantomData<T>,
+    token: PhantomData<T>,
+    state: PhantomData<S>,
 }
 
-pub fn compile<T: Token>(info: Vec<info::State>) -> Automaton<T> {
+pub fn compile<T: Token, S>(info: Vec<info::State>) -> Automaton<T, S> {
     let states: Vec<State> = info.iter()
         .map(|state| {
             State {
@@ -30,11 +31,12 @@ pub fn compile<T: Token>(info: Vec<info::State>) -> Automaton<T> {
     Automaton {
         states: states,
         start: start,
-        phantom: PhantomData,
+        token: PhantomData,
+        state: PhantomData,
     }
 }
 
-impl<T: Token> Automaton<T> {
+impl<T: Token, S> Automaton<T, S> {
     pub fn eval<I, J>(&self, input: I) -> bool
             where I: Iterator<Item=J>,
                   J: Input<T> {

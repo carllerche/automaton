@@ -1,39 +1,40 @@
-use {automaton, info, util, Automaton, Token};
-use std::{cmp, ops};
+use {automaton, info, util, Action, Automaton, Token};
+use std::{cmp, fmt, ops};
 use std::hash::{self, Hash, Hasher};
 use std::collections::{HashSet, HashMap};
 use std::collections::hash_map::Entry;
 use std::iter::{Iterator, IntoIterator};
 use std::marker::PhantomData;
 
-#[derive(Clone, Debug)]
-pub struct Expression<T: Token> {
+pub struct Expression<T: Token, S> {
     states: HashSet<State>,     // Set of states
     alphabet: Alphabet,         // The alphabet (valid input)
     transitions: Transitions,   // Set of transitions
     start: State,               // Initial state
     terminal: HashSet<State>,   // Set of terminal states
+    actions: Vec<Action<S>>,    // Actions
     phantom: PhantomData<T>,
 }
 
 pub type State = u32;
 
-impl<T: Token> Expression<T> {
+impl<T: Token, S> Expression<T, S> {
     /// Returns an automaton that accepts the given token
-    pub fn token(input: T) -> Expression<T> {
+    pub fn token(input: T) -> Expression<T, S> {
         let letter = Letter(input.as_range());
 
         Expression {
             states: set![0, 1],
             alphabet: Alphabet::single(letter.clone()),
-            transitions: Transitions::of(Transition::new(0, 1, letter)),
+            transitions: Transitions::of(0, 1, letter),
             start: 0,
             terminal: set![1],
+            actions: vec![],
             phantom: PhantomData,
         }
     }
 
-    pub fn sequence<I: Iterator<Item=T>>(tokens: I) -> Expression<T> {
+    pub fn sequence<I: Iterator<Item=T>>(tokens: I) -> Expression<T, S> {
         let start = 0;
         let mut states = set![start];
         let mut alphabet = Alphabet::empty();
@@ -47,7 +48,7 @@ impl<T: Token> Expression<T> {
 
             states.insert(state);
             alphabet.insert(letter.clone());
-            transitions.insert(Transition::new(prev, state, letter));
+            transitions.letter(prev, state, letter, vec![]);
             prev = state;
         }
 
@@ -57,6 +58,7 @@ impl<T: Token> Expression<T> {
             transitions: transitions,
             start: start,
             terminal: set![prev],
+            actions: vec![],
             phantom: PhantomData,
         };
 
@@ -67,14 +69,14 @@ impl<T: Token> Expression<T> {
     }
 
     /// Concatenate two automata
-    pub fn concat(mut self, mut other: Expression<T>) -> Expression<T> {
+    pub fn concat(mut self, mut other: Expression<T, S>) -> Expression<T, S> {
         // Ensure states don't overlap
         other.shift(self.next_state_id());
 
         // Add epsilon transitions from all final states to start of `other`
-        self.transitions.insert_all(
-            self.terminal.iter()
-                .map(|s| Transition::epsilon(*s, other.start)));
+        for state in &self.terminal {
+            self.transitions.insert(*state, other.start, None, vec![]);
+        }
 
         // Add states from `other`
         self.states.extend(other.states);
@@ -94,16 +96,16 @@ impl<T: Token> Expression<T> {
         self
     }
 
-    pub fn union(mut self, mut other: Expression<T>) -> Expression<T> {
+    pub fn union(mut self, mut other: Expression<T, S>) -> Expression<T, S> {
         self.union_or_intersection(other, false)
     }
 
-    pub fn intersection(mut self, mut other: Expression<T>) -> Expression<T> {
+    pub fn intersection(mut self, mut other: Expression<T, S>) -> Expression<T, S> {
         self.union_or_intersection(other, true)
     }
 
     // Performs either a union or an intersection, depending on the flag
-    fn union_or_intersection(mut self, mut other: Expression<T>, intersection: bool) -> Expression<T> {
+    fn union_or_intersection(mut self, mut other: Expression<T, S>, intersection: bool) -> Expression<T, S> {
         // Ensure states don't overlap
         other.shift(self.next_state_id());
 
@@ -132,8 +134,8 @@ impl<T: Token> Expression<T> {
 
         // Create epsilon transitions to the start of the current automaton and
         // the other one that is being unioned
-        self.transitions.insert(Transition::epsilon(state, self.start));
-        self.transitions.insert(Transition::epsilon(state, other.start));
+        self.transitions.epsilon(state, self.start, vec![]);
+        self.transitions.epsilon(state, other.start, vec![]);
 
         // Update the automaton's start transition
         self.start = state;
@@ -145,18 +147,18 @@ impl<T: Token> Expression<T> {
         self
     }
 
-    pub fn kleene(mut self) -> Expression<T> {
+    pub fn kleene(mut self) -> Expression<T, S> {
         let start = self.next_state_id();
         self.states.insert(start);
 
         let noop = self.next_state_id();
         self.states.insert(noop);
 
-        self.transitions.insert(Transition::epsilon(start, self.start));
-        self.transitions.insert(Transition::epsilon(start, noop));
+        self.transitions.epsilon(start, self.start, vec![]);
+        self.transitions.epsilon(start, noop, vec![]);
 
         for s in &self.terminal {
-            self.transitions.insert(Transition::epsilon(*s, start));
+            self.transitions.epsilon(*s, start, vec![]);
         }
 
         self.start = start;
@@ -167,7 +169,7 @@ impl<T: Token> Expression<T> {
         self
     }
 
-    pub fn compile(self) -> Automaton<T> {
+    pub fn compile(self) -> Automaton<T, S> {
         self.into()
     }
 
@@ -215,7 +217,7 @@ impl<T: Token> Expression<T> {
     // token transition to two possible final states.
     //
     // TODO: Optimize
-    fn refine_alphabet(&mut self) {
+fn refine_alphabet<'a>(&'a mut self) {
         // First, reduce the alphabet to a set of fully disjoint tokens
         self.alphabet.refine();
 
@@ -235,15 +237,14 @@ impl<T: Token> Expression<T> {
 
             for other in self.alphabet.iter() {
                 if contains(token, &other) {
-                    additions.push(Transition {
-                        input: Some(other.clone()),
-                        .. transition
-                    });
+                    additions.push((transition.from, transition.to, other.clone(), transition.actions.to_vec()));
                 }
             }
         });
 
-        self.transitions.insert_all(additions.into_iter());
+        for (from, to, input, actions) in additions {
+            self.transitions.insert(from, to, Some(input), actions);
+        }
 
         let alphabet = &self.alphabet;
 
@@ -466,7 +467,7 @@ impl<T: Token> Expression<T> {
 
     // Return the set of states reachable from a given state when the given
     // input is applied
-    fn reachable<S: StateSet>(&self, states: &S, input: Option<&Letter>) -> HashSet<State> {
+    fn reachable<A: StateSet>(&self, states: &A, input: Option<&Letter>) -> HashSet<State> {
         let mut ret = HashSet::with_capacity(self.transitions.len());
 
         self.transitions.each(|transition| {
@@ -480,7 +481,7 @@ impl<T: Token> Expression<T> {
 
     // Return the set of states from which a transition on the given input will
     // lead to one of the given destination states
-    fn reached<S: StateSet>(&self, dests: &S, input: Option<&Letter>) -> HashSet<State> {
+    fn reached<A: StateSet>(&self, dests: &A, input: Option<&Letter>) -> HashSet<State> {
         let mut ret = HashSet::with_capacity(self.transitions.len());
 
         self.transitions.each(|transition| {
@@ -618,8 +619,8 @@ impl<T: Token> Expression<T> {
     }
 }
 
-impl<T: Token> Into<Automaton<T>> for Expression<T> {
-    fn into(self) -> Automaton<T> {
+impl<T: Token, S> Into<Automaton<T, S>> for Expression<T, S> {
+    fn into(self) -> Automaton<T, S> {
         let mut states = vec![];
         let mut map: HashMap<State, usize> = HashMap::with_capacity(self.states.len());
 
@@ -643,6 +644,12 @@ impl<T: Token> Into<Automaton<T>> for Expression<T> {
         });
 
         automaton::compile(states)
+    }
+}
+
+impl<T: Token, S> fmt::Debug for Expression<T, S> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "Expression {{ ... }}")
     }
 }
 
@@ -694,8 +701,7 @@ impl Convert {
         let multi = MultiState::new(to);
         let (to, first) = self.track_multistate(multi.clone());
 
-        let transition = Transition::new(self.states[from], to, input);
-        self.transitions.insert(transition);
+        self.transitions.letter(self.states[from], to, input, vec![]);
 
         if first {
             self.remaining.push(multi);
@@ -740,26 +746,29 @@ impl Convert {
 }
 
 #[derive(Clone, Debug)]
-struct Transition {
+struct Transition<'a> {
     from: State,
     to: State,
     input: Option<Letter>, // None represents epsilon transition
+    actions: &'a [usize],  // Offset to a transition
 }
 
-impl Transition {
-    fn new(from: State, to: State, input: Letter) -> Transition {
+impl<'a> Transition<'a> {
+    fn new(from: State, to: State, input: Letter, actions: &'a [usize]) -> Transition<'a> {
         Transition {
             from: from,
             to: to,
             input: Some(input),
+            actions: actions,
         }
     }
 
-    fn epsilon(from: State, to: State) -> Transition {
+    fn epsilon(from: State, to: State, actions: &'a [usize]) -> Transition<'a> {
         Transition {
             from: from,
             to: to,
             input: None,
+            actions: actions,
         }
     }
 }
@@ -872,7 +881,8 @@ impl Hash for Letter {
 
 #[derive(Debug, Clone)]
 struct Transitions {
-    transitions: HashMap<State, HashMap<State, Vec<Option<Letter>>>>,
+    // source state -> target state -> input -> actions
+    transitions: HashMap<State, HashMap<State, HashMap<Option<Letter>, Vec<usize>>>>,
     len: usize,
 }
 
@@ -884,28 +894,33 @@ impl Transitions {
         }
     }
 
-    fn of(transition: Transition) -> Transitions {
+    fn of(from: State, to: State, letter: Letter) -> Transitions {
         let mut ret = Transitions::empty();
-        ret.insert(transition);
+        ret.letter(from, to, letter, vec![]);
         ret
     }
 
-    fn insert(&mut self, transition: Transition) {
-        let tokens = self.transitions
-            .entry(transition.from).or_insert_with(|| HashMap::new())
-            .entry(transition.to).or_insert_with(|| Vec::new());
-
-        if tokens.contains(&transition.input) {
-            return;
-        }
-
-        tokens.push(transition.input);
-        self.len += 1;
+    fn epsilon(&mut self, from: State, to: State, actions: Vec<usize>) {
+        self.insert(from, to, None, actions);
     }
 
-    fn insert_all<I>(&mut self, transitions: I) where I: Iterator<Item=Transition> {
-        for transition in transitions {
-            self.insert(transition);
+    fn letter(&mut self, from: State, to: State, letter: Letter, actions: Vec<usize>) {
+        self.insert(from, to, Some(letter), actions);
+    }
+
+    fn insert(&mut self, from: State, to: State, letter: Option<Letter>, actions: Vec<usize>) {
+        let tokens = self.transitions
+            .entry(from).or_insert_with(|| HashMap::new())
+            .entry(to).or_insert_with(|| HashMap::new());
+
+        match tokens.entry(letter) {
+            Entry::Occupied(mut e) => {
+                e.get_mut().extend(actions);
+            }
+            Entry::Vacant(e) => {
+                self.len += 1;
+                e.insert(actions);
+            }
         }
     }
 
@@ -936,13 +951,16 @@ impl Transitions {
                                     continue;
                                 }
 
-                                for token in tokens {
-                                    if e.get().contains(&token) {
-                                        continue;
+                                for (token, actions) in tokens {
+                                    match e.get_mut().entry(token) {
+                                        Entry::Occupied(mut e) => {
+                                            e.get_mut().extend(actions);
+                                        }
+                                        Entry::Vacant(e) => {
+                                            inserted += 1;
+                                            e.insert(actions);
+                                        }
                                     }
-
-                                    inserted += 1;
-                                    e.get_mut().push(token);
                                 }
                             }
                             Entry::Vacant(e) => {
@@ -990,11 +1008,22 @@ impl Transitions {
     fn retain<F>(&mut self, predicate: F) where F: Fn(&Transition) -> bool {
         for (from, dests) in self.transitions.iter_mut() {
             for (to, tokens) in dests.iter_mut() {
-                tokens.retain(|input| predicate(&Transition {
-                    from: *from,
-                    to: *to,
-                    input: input.clone(),
-                }));
+                let mut t: Vec<Option<Letter>> = tokens.keys().cloned().collect();
+
+                t.retain(|token| {
+                    let actions = &tokens[token];
+
+                    !predicate(&Transition {
+                        from: *from,
+                        to: *to,
+                        input: token.clone(),
+                        actions: actions,
+                    })
+                });
+
+                for token in t {
+                    tokens.remove(&token);
+                }
             }
         }
     }
@@ -1017,7 +1046,7 @@ impl Transitions {
         for (f, d) in &self.transitions {
             if *f == from {
                 for (d, i) in d {
-                    if i.iter().any(|i| i.as_ref().unwrap().contains(input)) {
+                    if i.keys().any(|i| i.as_ref().unwrap().contains(input)) {
                         return Some(*d);
                     }
                 }
@@ -1031,14 +1060,15 @@ impl Transitions {
         self.len
     }
 
-    fn each<F>(&self, mut action: F) where F: FnMut(Transition) {
+    fn each<'a, F>(&'a self, mut action: F) where F: FnMut(Transition<'a>) {
         for (from, dests) in &self.transitions {
             for (to, tokens) in dests {
-                for token in tokens {
+                for (token, actions) in tokens {
                     action(Transition {
                         from: *from,
                         to: *to,
                         input: token.clone(),
+                        actions: actions,
                     });
                 }
             }

@@ -1,8 +1,11 @@
+use automaton::*;
 use automaton::encoding::Ascii;
 
 #[test]
 pub fn test_single_char_automaton() {
-    let machine = Ascii::exact("a").compile();
+    let machine: Automaton<Ascii, ()> =
+        Ascii::exact("a")
+            .compile();
 
     assert!(machine.parse("a"));
     assert!(!machine.parse("b"));
@@ -11,7 +14,9 @@ pub fn test_single_char_automaton() {
 
 #[test]
 pub fn test_concat_two_chars() {
-    let machine = Ascii::exact("ab").compile();
+    let machine: Automaton<Ascii, ()> =
+        Ascii::exact("ab")
+            .compile();
 
     assert!(machine.parse("ab"));
 

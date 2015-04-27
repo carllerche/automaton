@@ -93,6 +93,11 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
 </pre><pre class='rust '>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>allow</span>(<span class='ident'>dead_code</span>, <span class='ident'>unused_variables</span>, <span class='ident'>unused_mut</span>, <span class='ident'>unreachable_code</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(<span class='ident'>warnings</span>)]</span>
@@ -106,6 +111,11 @@
     })
 }
 
+<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>debug</span> {
+    ($(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>:<span class='ident'>tt</span>)<span class='op'>*</span>) <span class='op'>=&gt;</span> (<span class='kw'>if</span> <span class='boolval'>false</span> { <span class='macro'>println</span><span class='macro'>!</span>($(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>)<span class='op'>*</span>) });
+}
+
+<span class='kw'>mod</span> <span class='ident'>alphabet</span>;
 <span class='kw'>mod</span> <span class='ident'>automaton</span>;
 <span class='kw'>mod</span> <span class='ident'>expression</span>;
 <span class='kw'>mod</span> <span class='ident'>util</span>;

@@ -1,4 +1,5 @@
 use {automaton, info, util, Action, Automaton, Token};
+use alphabet::{Alphabet, Letter};
 use std::{cmp, fmt, ops};
 use std::hash::{self, Hash, Hasher};
 use std::collections::{HashSet, HashMap};
@@ -140,6 +141,8 @@ impl<T: Token, S> Expression<T, S> {
         // Update the automaton's start transition
         self.start = state;
 
+        debug!(" ~~~~~~~~~~ UNION / INTERSECTION ~~~~~~~~~~~~~~~~");
+
         // Optimize the automaton, converting to a DFA and merging all similar
         // states
         self.optimize(&ctx);
@@ -187,6 +190,7 @@ impl<T: Token, S> Expression<T, S> {
 
     // Optimize the representation of the automaton
     fn optimize(&mut self, ctx: &Context) {
+        debug!("~~~~~~~~~~ OPTIMIZE ~~~~~~~~~~");
         // Ensure the alphabet tokens are disjoint
         self.refine_alphabet();
 
@@ -236,7 +240,7 @@ fn refine_alphabet<'a>(&'a mut self) {
             }
 
             for other in self.alphabet.iter() {
-                if contains(token, &other) {
+                if token.contains(&other) {
                     additions.push((transition.from, transition.to, other.clone(), transition.actions.to_vec()));
                 }
             }
@@ -307,6 +311,9 @@ fn refine_alphabet<'a>(&'a mut self) {
 
         // Step 1) Refine the partitions
         self.refine(&mut minimize);
+
+        // Step 2) Apply the refinement
+        self.apply_refinement(&mut minimize);
     }
 
     // Refine the partitions. This is done by removing an (any) partition from
@@ -314,10 +321,19 @@ fn refine_alphabet<'a>(&'a mut self) {
     // able to perform set ops on the remaining partitions.
     fn refine(&mut self, minimize: &mut Minimize) {
         while let Some(state) = util::pop(&mut minimize.remaining) {
+            debug!("... iterating; curr={:?}", state);
+            debug!("         partitions={:?}", minimize.partitions);
             for token in self.alphabet.iter() {
                 let x = self.reached(&state, Some(&token));
 
+                debug!("  set of states that can reach: {:?}", x);
+
+                if x.is_empty() {
+                    continue;
+                }
+
                 for y in minimize.partitions.clone().into_iter() {
+                    debug!("  comparing with {:?}", y);
                     let y1 = y.intersection(&x);
 
                     if y1.is_empty() {
@@ -330,16 +346,23 @@ fn refine_alphabet<'a>(&'a mut self) {
                         continue;
                     }
 
+                    debug!("  match:");
+
                     // Refine the partition
                     assert!(minimize.partitions.remove(&y));
+                    minimize.partitions.insert(y1.clone());
+                    minimize.partitions.insert(y2.clone());
 
                     if minimize.remaining.remove(&y) {
+                        debug!("    already contained, splitting");
                         minimize.remaining.insert(y1);
                         minimize.remaining.insert(y2);
                     } else {
-                        if y1.len() < y2.len() {
+                        if y1.len() <= y2.len() {
+                            debug!("    not contained, adding intersection");
                             minimize.remaining.insert(y1);
                         } else {
+                            debug!("    not contained, adding difference");
                             minimize.remaining.insert(y2);
                         }
                     }
@@ -350,11 +373,16 @@ fn refine_alphabet<'a>(&'a mut self) {
 
     // Uses the computed refinements and applies them to the current DFA
     fn apply_refinement<'a>(&'a mut self, minimize: &'a mut Minimize) {
+        let inc = self.next_state_id();
+
         // Map partitions to state IDs
         let target_states: HashMap<&'a Partition, State> = minimize.partitions.iter()
             .enumerate()
-            .map(|(i, p)| (p, i as State))
+            .map(|(i, p)| (p, i as State + inc))
             .collect();
+
+        debug!("STATES: {:?}", self.states);
+        debug!("REFINEMENTS: {:?}", target_states);
 
         // Next step is to create a map from the original states of the DFA ->
         // new states. This is done by finding the partition that contains the
@@ -368,6 +396,12 @@ fn refine_alphabet<'a>(&'a mut self) {
                 (s, target_states[partition])
             })
             .collect();
+
+        debug!("");
+        debug!("State map:");
+        for (from, to) in &state_map {
+            debug!("  {} -> {}", from, to);
+        }
 
         // Load the new state IDs
         self.states.clear();
@@ -386,6 +420,15 @@ fn refine_alphabet<'a>(&'a mut self) {
             .filter(|p| !p.is_disjoint(&self.terminal))
             .map(|p| target_states[p])
             .collect();
+
+        debug!("RESULT:");
+        debug!("  states: {:?}", self.states);
+        debug!("  start: {:?}", self.start);
+        debug!("  terminal: {:?}", self.terminal);
+        debug!("  transitions:");
+        self.transitions.each(|t| {
+            debug!("    {:?} -- ( {:?} ) --> {:?}", t.from, t.input, t.to);
+        });
     }
 
     /*
@@ -663,6 +706,10 @@ impl Minimize {
     fn new(terminal: HashSet<State>, nonterminal: HashSet<State>) -> Minimize {
         let terminal = Partition::new(terminal);
 
+        debug!("MINIMIZE:");
+        debug!("  terminal:     {:?}", terminal);
+        debug!("  non-terminal: {:?}", nonterminal);
+
         Minimize {
             remaining: set![terminal.clone()],
             partitions: set![terminal, Partition::new(nonterminal)],
@@ -770,112 +817,6 @@ impl<'a> Transition<'a> {
             input: None,
             actions: actions,
         }
-    }
-}
-
-
-#[derive(Clone, Debug)]
-struct Alphabet {
-    tokens: HashSet<Letter>,
-}
-
-impl Alphabet {
-    fn empty() -> Alphabet {
-        Alphabet {
-            tokens: set![],
-        }
-    }
-
-    fn single(letter: Letter) -> Alphabet {
-        Alphabet {
-            tokens: set![letter],
-        }
-    }
-
-    fn extend(&mut self, other: &Alphabet) {
-        for token in &other.tokens {
-            self.insert(token.clone());
-        }
-    }
-
-    fn refine(&mut self) {
-        let mut tokens: Vec<Option<Letter>> = self.tokens.iter()
-            .cloned()
-            .map(|t| Some(t))
-            .collect();
-
-        let mut i = 0;
-
-        while i < tokens.len() {
-            if tokens[i].is_none() {
-                i += 1;
-                continue;
-            }
-
-            for j in i+1..tokens.len() {
-                if tokens[i].is_none() || tokens[j].is_none() {
-                    continue;
-                }
-
-                let new = disjoint(
-                    tokens[i].as_ref().expect("token[i] is none"),
-                    tokens[j].as_ref().expect("token[j] is none"));
-
-                if let Some(new) = new {
-                    tokens[i].take();
-                    tokens[j].take();
-
-                    tokens.extend(new.into_iter().map(|t| Some(t)));
-                }
-            }
-
-            i += 1;
-        }
-
-        self.tokens.clear();
-        self.tokens.extend(tokens.into_iter().filter_map(|t| t));
-    }
-}
-
-impl ops::Deref for Alphabet {
-    type Target = HashSet<Letter>;
-
-    fn deref(&self) -> &HashSet<Letter> {
-        &self.tokens
-    }
-}
-
-impl ops::DerefMut for Alphabet {
-    fn deref_mut(&mut self) -> &mut HashSet<Letter> {
-        &mut self.tokens
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-struct Letter(ops::Range<u32>);
-
-impl Letter {
-    fn contains(&self, val: u32) -> bool {
-        self.start <= val && self.end > val
-    }
-
-    fn to_token<T: Token>(&self) -> T {
-        <T as Token>::from_range(&self.0)
-    }
-}
-
-impl ops::Deref for Letter {
-    type Target = ops::Range<u32>;
-
-    fn deref(&self) -> &ops::Range<u32> {
-        &self.0
-    }
-}
-
-impl Hash for Letter {
-    fn hash<H>(&self, state: &mut H) where H: Hasher {
-        self.start.hash(state);
-        self.end.hash(state);
     }
 }
 
@@ -1029,24 +970,56 @@ impl Transitions {
     }
 
     fn remap(&mut self, map: &HashMap<State, State>) {
-        for (orig, new) in map {
-            if let Some(mut dests) = self.transitions.remove(&orig) {
-                for (orig, new) in map {
-                    if let Some(tokens) = dests.remove(&orig) {
-                        dests.insert(*new, tokens);
+        debug!("Remapping transitions");
+        debug!("  map: {:?}", map);
+        debug!("  transitions: {:?}", self.transitions);
+        for (from_orig, from_new) in map {
+            if let Some(mut dests) = self.transitions.remove(&from_orig) {
+                for (to_orig, to_new) in map {
+                    if let Some(tokens) = dests.remove(&to_orig) {
+                        debug!("    to {} -> {}", to_orig, to_new);
+                        match dests.entry(*to_new) {
+                            Entry::Vacant(e) => {
+                                e.insert(tokens);
+                            }
+                            Entry::Occupied(mut e) => {
+                                e.get_mut().extend(tokens);
+                            }
+                        }
                     }
                 }
 
-                self.transitions.insert(*new, dests);
+                match self.transitions.entry(*from_new) {
+                    Entry::Vacant(e) => {
+                        e.insert(dests);
+                    }
+                    Entry::Occupied(mut e) => {
+                        for (k, v) in dests {
+                            match e.get_mut().entry(k) {
+                                Entry::Vacant(mut e) => {
+                                    e.insert(v);
+                                }
+                                Entry::Occupied(mut e) => {
+                                    // TODO: Assert unique
+                                    e.get_mut().extend(v);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                debug!("    from {} -> {}", from_orig, from_new);
             }
         }
+        debug!("\nAFTER:");
+        debug!("  transitions: {:?}", self.transitions);
     }
 
     fn destination(&self, from: State, input: u32) -> Option<State> {
         for (f, d) in &self.transitions {
             if *f == from {
                 for (d, i) in d {
-                    if i.keys().any(|i| i.as_ref().unwrap().contains(input)) {
+                    if i.keys().any(|i| i.as_ref().unwrap().contains_val(input)) {
                         return Some(*d);
                     }
                 }
@@ -1182,40 +1155,4 @@ impl Context {
             intersect: None,
         }
     }
-}
-
-
-
-fn disjoint(a: &Letter, b: &Letter) -> Option<Vec<Letter>> {
-    // If the tokens don't overlap, nothing more to do
-    if a.0.end <= b.0.start || b.0.end <= a.0.start {
-        return None;
-    }
-
-    let mut points = [
-        a.0.start,
-        a.0.end,
-        b.0.start,
-        b.0.end,
-    ];
-
-    points.sort();
-
-    fn push(dst: &mut Vec<Letter>, range: ops::Range<u32>) {
-        if range.end > range.start {
-            dst.push(Letter(range));
-        }
-    }
-
-    let mut ret = Vec::with_capacity(3);
-
-    push(&mut ret, ops::Range { start: points[0], end: points[1] });
-    push(&mut ret, ops::Range { start: points[1], end: points[2] });
-    push(&mut ret, ops::Range { start: points[2], end: points[3] });
-
-    Some(ret)
-}
-
-fn contains(a: &Letter, b: &Letter) -> bool {
-    a.0.start <= b.0.start && a.0.end >= b.0.end
 }

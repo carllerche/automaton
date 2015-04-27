@@ -10,6 +10,11 @@ macro_rules! set {
     })
 }
 
+macro_rules! debug {
+    ($($arg:tt)*) => (if false { println!($($arg)*) });
+}
+
+mod alphabet;
 mod automaton;
 mod expression;
 mod util;

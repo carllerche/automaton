@@ -11,12 +11,14 @@ macro_rules! set {
 }
 
 macro_rules! debug {
-    ($($arg:tt)*) => (if false { println!($($arg)*) });
+    ($($arg:tt)*) => (if true { println!($($arg)*) });
 }
 
 mod alphabet;
 mod automaton;
+mod dfa;
 mod expression;
+mod transition;
 mod util;
 
 pub mod encoding;
@@ -39,7 +41,19 @@ pub trait Input<T: Token> {
     fn as_u32(&self) -> u32;
 }
 
-type Action<S> = Box<Fn(&mut S)>;
+mod core {
+    pub use {Input, Token};
+    pub use alphabet::{Alphabet, Letter};
+    pub use automaton::Automaton;
+    pub use dfa::Dfa;
+    pub use transition::{Transition, Transitions};
+
+    /// A state in an NFA or DFA
+    pub type State = u32;
+
+    /// A user defined action
+    pub type Action<S> = Box<Fn(&mut S)>;
+}
 
 /// Used for compiling an expression
 mod info {

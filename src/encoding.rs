@@ -97,8 +97,8 @@ impl Input<Ascii> for char {
 }
 
 impl<S> Automaton<Ascii, S> {
-    pub fn parse(&self, s: &str) -> bool {
-        self.eval(s.chars())
+    pub fn parse(&self, state: &mut S, s: &str) -> bool {
+        self.eval(state, s.chars())
     }
 }
 

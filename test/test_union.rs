@@ -11,12 +11,14 @@ pub fn test_simple_union() {
             .union(Ascii::exact("c"))
             .compile();
 
+    println!("{:?}", machine);
+
     for s in ["a", "c"].iter() {
-        assert!(machine.parse(s));
+        assert!(machine.parse(&mut (), s));
     }
 
     for s in ["ab", "abcdefghijklzxywijslyla"].iter() {
-        assert!(!machine.parse(s));
+        assert!(!machine.parse(&mut (), s));
     }
 }
 
@@ -32,10 +34,10 @@ pub fn test_larger_union() {
             .compile();
 
     for s in ["a", STR1, STR2].iter() {
-        assert!(machine.parse(s));
+        assert!(machine.parse(&mut (), s));
     }
 
     for s in ["e", "abcdefghijklzxywijslyla"].iter() {
-        assert!(!machine.parse(s));
+        assert!(!machine.parse(&mut (), s));
     }
 }

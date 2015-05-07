@@ -8,11 +8,11 @@ pub fn test_basic_range() {
             .compile();
 
     for s in ["a", "b", "c", "d"].iter() {
-        assert!(machine.parse(s), "failed to parse `{}`", s);
+        assert!(machine.parse(&mut (), s), "failed to parse `{}`", s);
     }
 
     for s in ["e", "aa", "", "ab", "f", "fa"].iter() {
-        assert!(!machine.parse(s), "parsed `{}`", s);
+        assert!(!machine.parse(&mut (), s), "parsed `{}`", s);
     }
 }
 
@@ -24,11 +24,11 @@ pub fn test_union_distinct_ranges() {
             .compile();
 
     for s in ["a", "b", "c", "f", "g"].iter() {
-        assert!(machine.parse(s), "failed to parse `{}`", s);
+        assert!(machine.parse(&mut (), s), "failed to parse `{}`", s);
     }
 
     for s in ["d", "e", "h"].iter() {
-        assert!(!machine.parse(s));
+        assert!(!machine.parse(&mut (), s));
     }
 }
 
@@ -40,10 +40,10 @@ pub fn test_union_sequential_ranges() {
             .compile();
 
     for s in ["a", "b", "c", "d"].iter() {
-        assert!(machine.parse(s), "failed to parse `{}`", s);
+        assert!(machine.parse(&mut (), s), "failed to parse `{}`", s);
     }
 
-    assert!(!machine.parse("e"));
+    assert!(!machine.parse(&mut (), "e"));
 }
 
 #[test]
@@ -54,7 +54,7 @@ pub fn test_union_subset_ranges() {
             .compile();
 
     for s in ["a", "b", "c"].iter() {
-        assert!(machine.parse(s), "failed to parse `{}`", s);
+        assert!(machine.parse(&mut (), s), "failed to parse `{}`", s);
     }
 }
 
@@ -66,10 +66,10 @@ pub fn test_union_overlapping_ranges() {
             .compile();
 
     for s in ["a", "b", "c", "d", "e", "f", "g"].iter() {
-        assert!(machine.parse(s), "failed to parse `{}`", s);
+        assert!(machine.parse(&mut (), s), "failed to parse `{}`", s);
     }
 
     for s in ["h", "ab", "ia"].iter() {
-        assert!(!machine.parse(s));
+        assert!(!machine.parse(&mut (), s));
     }
 }

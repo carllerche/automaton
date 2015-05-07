@@ -10,9 +10,9 @@ pub fn test_intersection_with_kleene() {
                 .concat(Ascii::exact("c").kleene()))
         .compile();
 
-    assert!(machine.parse("b"));
+    assert!(machine.parse(&mut (), "b"));
 
     for s in ["ab", "bc"].iter() {
-        assert!(!machine.parse(s), "parsed `{}`", s);
+        assert!(!machine.parse(&mut (), s), "parsed `{}`", s);
     }
 }

@@ -20,7 +20,7 @@ pub fn bench_automaton_sequence(b: &mut Bencher) {
             .compile();
 
     b.iter(|| {
-        machine.parse(STR1);
+        machine.parse(&mut (), STR1);
     })
 }
 
@@ -45,8 +45,8 @@ pub fn bench_automaton_union(b: &mut Bencher) {
             .compile();
 
     b.iter(|| {
-        assert!(machine.parse(STR1));
-        assert!(machine.parse(STR2));
+        assert!(machine.parse(&mut (), STR1));
+        assert!(machine.parse(&mut (), STR2));
     })
 }
 

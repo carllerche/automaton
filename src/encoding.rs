@@ -65,11 +65,11 @@ impl fmt::Debug for Ascii {
 
         fn debug(byte: &[u8]) -> String {
             if byte == [9] {
-                "\\t".to_string()
+                "\\t".to_owned()
             } else if byte[0] < 32 || byte == [127] {
                 format!("\\{}", byte[0])
             } else {
-                str::from_utf8(byte).unwrap_or("?").to_string()
+                str::from_utf8(byte).unwrap_or("?").to_owned()
             }
         }
 

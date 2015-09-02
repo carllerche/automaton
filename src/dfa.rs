@@ -238,7 +238,7 @@ impl<S> Dfa<S> {
     pub fn on_exit(&mut self, action: Action<S>) {
         let idx = self.push_action(action);
 
-        for (_, v) in self.terminal.iter_mut() {
+        for (_, v) in &mut self.terminal {
             insert_action(v, idx);
         }
     }
@@ -373,7 +373,7 @@ impl<S> Dfa<S> {
     // token transition to two possible final states.
     //
     // TODO: Optimize
-    fn refine_alphabet<'a>(&'a mut self) {
+    fn refine_alphabet(&mut self) {
         // First, reduce the alphabet to a set of fully disjoint tokens
         self.alphabet.refine();
 
@@ -738,8 +738,7 @@ impl<S> Dfa<S> {
         while let Some(f) = util::pop(&mut from) {
             for t in to.iter() {
                 if let Some(a) = self.transitions.actions(f, *t, token) {
-                    res.entry(&a).or_insert_with(|| HashSet::new())
-                        .insert(f);
+                    res.entry(&a).or_insert_with(HashSet::new).insert(f);
                 }
             }
         }
@@ -810,7 +809,7 @@ impl<S> Dfa<S> {
 
         let mut states = HashSet::with_capacity(self.states.len());
 
-        for state in self.states.iter() {
+        for state in &self.states {
             states.insert(state + state_shift);
         }
 
@@ -818,7 +817,7 @@ impl<S> Dfa<S> {
         let old = mem::replace(&mut self.terminal, new);
 
         for (state, mut actions) in old {
-            for action in actions.iter_mut() {
+            for action in &mut actions {
                 *action = *action + action_shift;
             }
 
@@ -877,14 +876,12 @@ impl Convert {
         let mut states = HashMap::new();
         states.insert(state.clone(), 0);
 
-        let ret = Convert {
+        Convert {
             states: states,
             start: 0,
             transitions: Transitions::empty(),
             remaining: vec![state],
-        };
-
-        ret
+        }
     }
 
     fn add_transition(&mut self, from: &MultiState, to: &HashSet<State>, input: Letter, actions: Vec<usize>) {
@@ -1095,5 +1092,5 @@ fn is_ordered(idxs: &[usize]) -> bool {
         }
     }
 
-    return true;
+    true
 }

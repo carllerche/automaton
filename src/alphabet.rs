@@ -30,7 +30,7 @@ impl Alphabet {
     pub fn refine(&mut self) {
         let mut tokens: Vec<Option<Letter>> = self.tokens.iter()
             .cloned()
-            .map(|t| Some(t))
+            .map(Some)
             .collect();
 
         let mut i = 0;
@@ -54,7 +54,7 @@ impl Alphabet {
                     tokens[i].take();
                     tokens[j].take();
 
-                    tokens.extend(new.into_iter().map(|t| Some(t)));
+                    tokens.extend(new.into_iter().map(Some));
                 }
             }
 

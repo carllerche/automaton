@@ -78,8 +78,8 @@ impl Transitions {
 
     pub fn insert(&mut self, from: State, to: State, letter: Option<Letter>, actions: Vec<usize>) {
         let tokens = self.transitions
-            .entry(from).or_insert_with(|| HashMap::new())
-            .entry(to).or_insert_with(|| HashMap::new());
+            .entry(from).or_insert_with(HashMap::new)
+            .entry(to).or_insert_with(HashMap::new);
 
         match tokens.entry(letter) {
             Entry::Occupied(mut e) => {
@@ -167,7 +167,7 @@ impl Transitions {
             for &to in &to_states {
                 let mut tokens = dests.remove(&to).unwrap();
 
-                for (_, mut actions) in tokens.iter_mut() {
+                for (_, ref mut actions) in &mut tokens {
                     for action in actions.iter_mut() {
                         *action = *action + action_shift;
                     }
@@ -208,7 +208,7 @@ impl Transitions {
     pub fn remap_dest(&mut self, orig: State, new: State) -> bool {
         let mut any = false;
 
-        for (_, dests) in self.transitions.iter_mut() {
+        for (_, dests) in &mut self.transitions {
             if let Some(tokens) = dests.remove(&orig) {
                 dests.insert(new, tokens);
                 any = true;
@@ -287,6 +287,10 @@ impl Transitions {
 
     pub fn len(&self) -> usize {
         self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
     }
 
     pub fn each<'a, F>(&'a self, mut action: F) where F: FnMut(Transition<'a>) {

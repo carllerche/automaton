@@ -187,7 +187,7 @@ impl<S> Compile<S> {
         // to op map
         self.ensure_states_preped(&t, &dfa);
 
-        // Offset to jump to 
+        // Offset to jump to
         let mut dest = self.map[&t.to()];
 
         if !t.actions().is_empty() {
@@ -212,8 +212,8 @@ impl<S> Compile<S> {
 
             self.ops.push(Op::Terminal);
 
-            match &mut self.ops[self.map[terminal]] {
-                &mut Op::Lookup(_, ref mut t) => {
+            match self.ops[self.map[terminal]] {
+                Op::Lookup(_, ref mut t) => {
                     *t = dest;
                 }
                 _ => panic!("expected state op"),
@@ -239,8 +239,8 @@ impl<S> Compile<S> {
     }
 
     fn add_input(&mut self, from: State, dest: usize, on: &Letter) {
-        match &mut self.ops[self.map[&from]] {
-            &mut Op::Lookup(ref mut table, _) => {
+        match self.ops[self.map[&from]] {
+            Op::Lookup(ref mut table, _) => {
                 table.update(dest, on);
             }
             _ => panic!("expected state transition op"),

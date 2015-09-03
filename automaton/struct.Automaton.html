@@ -34,55 +34,68 @@
             <div class="search-container">
                 <input class="search-input" name="search"
                        autocomplete="off"
-                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
                        type="search">
             </div>
         </form>
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>automaton</a>::<wbr><a class='struct' href=''>Automaton</a><wbr></span><span class='out-of-band'><span id='render-detail'>
-            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-747' href='../src/automaton/automaton.rs.html#12-17'>[src]</a></span></h1>
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>automaton</a>::<wbr><a class='struct' href=''>Automaton</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-735' class='srclink' href='../src/automaton/automaton.rs.html#12-17' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Automaton&lt;T, S&gt; {
     // some fields omitted
-}</pre><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;T: <a class='trait' href='../automaton/trait.Token.html' title='automaton::Token'>Token</a>, S&gt; <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h3><div class='impl-items'><h4 id='method.eval' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.eval' class='fnname'>eval</a>&lt;I, J&gt;(&amp;self, s: &amp;mut S, input: I) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a> <span class='where'>where I: <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=J&gt;, J: <a class='trait' href='../automaton/trait.Input.html' title='automaton::Input'>Input</a>&lt;T&gt;</span></code></h4>
-</div><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;S&gt; <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;<a class='struct' href='../automaton/encoding/struct.Ascii.html' title='automaton::encoding::Ascii'>Ascii</a>, S&gt;</code></h3><div class='impl-items'><h4 id='method.parse' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.parse' class='fnname'>parse</a>(&amp;self, state: &amp;mut S, s: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
-</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;T: <a class='trait' href='../automaton/trait.Token.html' title='automaton::Token'>Token</a>, S&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;Dfa&lt;S&gt;&gt; for <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h3><div class='impl-items'><h4 id='method.from' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='http://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(dfa: Dfa&lt;S&gt;) -&gt; <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h4>
-</div><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;T: <a class='trait' href='../automaton/trait.Token.html' title='automaton::Token'>Token</a>, S&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, fmt: &amp;mut <a class='struct' href='http://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='http://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+}</pre><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../automaton/trait.Token.html' title='automaton::Token'>Token</a>, S&gt; <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h3><div class='impl-items'><h4 id='method.eval' class='method'><code>fn <a href='#method.eval' class='fnname'>eval</a>&lt;I, J&gt;(&amp;self, s: &amp;mut S, input: I) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a> <span class='where'>where I: <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=J&gt;, J: <a class='trait' href='../automaton/trait.Input.html' title='automaton::Input'>Input</a>&lt;T&gt;</span></code></h4>
+</div><h3 class='impl'><code>impl&lt;S&gt; <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;<a class='struct' href='../automaton/encoding/struct.Ascii.html' title='automaton::encoding::Ascii'>Ascii</a>, S&gt;</code></h3><div class='impl-items'><h4 id='method.parse' class='method'><code>fn <a href='#method.parse' class='fnname'>parse</a>(&amp;self, state: &amp;mut S, s: &amp;<a href='http://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../automaton/trait.Token.html' title='automaton::Token'>Token</a>, S&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;Dfa&lt;S&gt;&gt; for <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h3><div class='impl-items'><h4 id='method.from' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(dfa: Dfa&lt;S&gt;) -&gt; <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h4>
+</div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../automaton/trait.Token.html' title='automaton::Token'>Token</a>, S&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../automaton/struct.Automaton.html' title='automaton::Automaton'>Automaton</a>&lt;T, S&gt;</code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, fmt: &amp;mut <a class='struct' href='http://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='http://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
 
     <div id="help" class="hidden">
-        <div class="shortcuts">
-            <h1>Keyboard shortcuts</h1>
-            <dl>
-                <dt>?</dt>
-                <dd>Show this help dialog</dd>
-                <dt>S</dt>
-                <dd>Focus the search field</dd>
-                <dt>&larrb;</dt>
-                <dd>Move up in search results</dd>
-                <dt>&rarrb;</dt>
-                <dd>Move down in search results</dd>
-                <dt>&#9166;</dt>
-                <dd>Go to active search result</dd>
-            </dl>
-        </div>
-        <div class="infos">
-            <h1>Search tricks</h1>
-            <p>
-                Prefix searches with a type followed by a colon (e.g.
-                <code>fn:</code>) to restrict the search to a given type.
-            </p>
-            <p>
-                Accepted types are: <code>fn</code>, <code>mod</code>,
-                <code>struct</code>, <code>enum</code>,
-                <code>trait</code>, <code>typedef</code> (or
-                <code>tdef</code>).
-            </p>
+        <div>
+            <div class="shortcuts">
+                <h1>Keyboard Shortcuts</h1>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h1>Search Tricks</h1>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>typedef</code> (or
+                    <code>tdef</code>).
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
         </div>
     </div>
 

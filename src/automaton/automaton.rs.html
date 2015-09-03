@@ -34,7 +34,7 @@
             <div class="search-container">
                 <input class="search-input" name="search"
                        autocomplete="off"
-                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
                        type="search">
             </div>
         </form>
@@ -594,7 +594,7 @@
         <span class='comment'>// to op map</span>
         <span class='self'>self</span>.<span class='ident'>ensure_states_preped</span>(<span class='kw-2'>&amp;</span><span class='ident'>t</span>, <span class='kw-2'>&amp;</span><span class='ident'>dfa</span>);
 
-        <span class='comment'>// Offset to jump to </span>
+        <span class='comment'>// Offset to jump to</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>dest</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>map</span>[<span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>to</span>()];
 
         <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>t</span>.<span class='ident'>actions</span>().<span class='ident'>is_empty</span>() {
@@ -619,8 +619,8 @@
 
             <span class='self'>self</span>.<span class='ident'>ops</span>.<span class='ident'>push</span>(<span class='ident'>Op</span>::<span class='ident'>Terminal</span>);
 
-            <span class='kw'>match</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>ops</span>[<span class='self'>self</span>.<span class='ident'>map</span>[<span class='ident'>terminal</span>]] {
-                <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Op</span>::<span class='ident'>Lookup</span>(_, <span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>t</span>) <span class='op'>=&gt;</span> {
+            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>ops</span>[<span class='self'>self</span>.<span class='ident'>map</span>[<span class='ident'>terminal</span>]] {
+                <span class='ident'>Op</span>::<span class='ident'>Lookup</span>(_, <span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>t</span>) <span class='op'>=&gt;</span> {
                     <span class='op'>*</span><span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>dest</span>;
                 }
                 _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;expected state op&quot;</span>),
@@ -646,8 +646,8 @@
     }
 
     <span class='kw'>fn</span> <span class='ident'>add_input</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>from</span>: <span class='ident'>State</span>, <span class='ident'>dest</span>: <span class='ident'>usize</span>, <span class='ident'>on</span>: <span class='kw-2'>&amp;</span><span class='ident'>Letter</span>) {
-        <span class='kw'>match</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>ops</span>[<span class='self'>self</span>.<span class='ident'>map</span>[<span class='kw-2'>&amp;</span><span class='ident'>from</span>]] {
-            <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Op</span>::<span class='ident'>Lookup</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>table</span>, _) <span class='op'>=&gt;</span> {
+        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>ops</span>[<span class='self'>self</span>.<span class='ident'>map</span>[<span class='kw-2'>&amp;</span><span class='ident'>from</span>]] {
+            <span class='ident'>Op</span>::<span class='ident'>Lookup</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>table</span>, _) <span class='op'>=&gt;</span> {
                 <span class='ident'>table</span>.<span class='ident'>update</span>(<span class='ident'>dest</span>, <span class='ident'>on</span>);
             }
             _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;expected state transition op&quot;</span>),
@@ -776,33 +776,44 @@
     <section class="footer"></section>
 
     <div id="help" class="hidden">
-        <div class="shortcuts">
-            <h1>Keyboard shortcuts</h1>
-            <dl>
-                <dt>?</dt>
-                <dd>Show this help dialog</dd>
-                <dt>S</dt>
-                <dd>Focus the search field</dd>
-                <dt>&larrb;</dt>
-                <dd>Move up in search results</dd>
-                <dt>&rarrb;</dt>
-                <dd>Move down in search results</dd>
-                <dt>&#9166;</dt>
-                <dd>Go to active search result</dd>
-            </dl>
-        </div>
-        <div class="infos">
-            <h1>Search tricks</h1>
-            <p>
-                Prefix searches with a type followed by a colon (e.g.
-                <code>fn:</code>) to restrict the search to a given type.
-            </p>
-            <p>
-                Accepted types are: <code>fn</code>, <code>mod</code>,
-                <code>struct</code>, <code>enum</code>,
-                <code>trait</code>, <code>typedef</code> (or
-                <code>tdef</code>).
-            </p>
+        <div>
+            <div class="shortcuts">
+                <h1>Keyboard Shortcuts</h1>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h1>Search Tricks</h1>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>typedef</code> (or
+                    <code>tdef</code>).
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
         </div>
     </div>
 

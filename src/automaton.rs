@@ -1,6 +1,6 @@
 // use {info, Dfa, Token, Input};
 use core::{Action, Dfa, Token, Transition, Letter, Input, State};
-use std::{cmp, fmt, iter, usize};
+use std::{cmp, fmt, iter, io, usize};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::marker::PhantomData;
@@ -39,11 +39,11 @@ impl<T: Token, S> Automaton<T, S> {
             where I: Iterator<Item=J>,
                   J: Input<T>
     {
-        self.try_eval(s, input.map(Ok)).expect("can't be err")
+        self.eval_io(s, input.map(Ok)).expect("can't be err")
     }
 
-    pub fn try_eval<I, J>(&self, s: &mut S, input: I) -> Result<bool, ::std::io::CharsError>
-        where I: Iterator<Item=Result<J, ::std::io::CharsError>>,
+    pub fn eval_io<I, J>(&self, s: &mut S, input: I) -> Result<bool, io::Error>
+        where I: Iterator<Item=Result<J, io::Error>>,
               J: Input<T>
     {
         let mut state = self.enter;

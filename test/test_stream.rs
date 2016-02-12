@@ -11,5 +11,5 @@ pub fn test_stream() {
             .compile();
 
     let stream = "aaaaaab".as_bytes();
-    assert!(machine.try_eval(&mut (), stream.chars()).is_ok());
+    assert!(machine.eval_io(&mut (), stream.bytes()).is_ok());
 }

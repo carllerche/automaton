@@ -1,5 +1,3 @@
-#![feature(io)]
-
 extern crate automaton;
 
 mod test_intersection;

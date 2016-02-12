@@ -1,3 +1,5 @@
+#![feature(io)]
+
 #![allow(dead_code, unused_variables, unused_mut, unreachable_code)]
 #![deny(warnings)]
 

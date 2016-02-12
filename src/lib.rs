@@ -1,6 +1,9 @@
 #![allow(dead_code, unused_variables, unused_mut, unreachable_code)]
 #![deny(warnings)]
 
+#[macro_use]
+extern crate log;
+
 macro_rules! set {
     () => ({ HashSet::new() });
     ($($elem:expr),*) => ({
@@ -8,10 +11,6 @@ macro_rules! set {
         $(s.insert($elem);)*
         s
     })
-}
-
-macro_rules! debug {
-    ($($arg:tt)*) => (if true { println!($($arg)*) });
 }
 
 mod alphabet;

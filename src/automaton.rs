@@ -37,86 +37,9 @@ impl<T: Token, S> From<Dfa<S>> for Automaton<T, S> {
 impl<T: Token, S> Automaton<T, S> {
     pub fn eval<I, J>(&self, s: &mut S, input: I) -> bool
             where I: Iterator<Item=J>,
-                  J: Input<T> {
-
-        let mut state = self.enter;
-
-        debug!("EVAL; state={}", state);
-
-        for val in input {
-            debug!("  input={}", val.as_u32());
-
-            loop {
-                match self.ops[state] {
-                    Op::Lookup(ref table, _) => {
-                        match table.lookup(val.as_u32()) {
-                            Some(dest) => {
-                                debug!("  matching input; success; state={}; jump={}", state, dest);
-                                state = dest;
-                                break;
-                            }
-                            None => {
-                                debug!("  matching input; state={}; FAIL", state);
-                                return false;
-                            }
-                        }
-                    }
-                    Op::Jump(dst) => {
-                        debug!("  state={}; jump={}", state, dst);
-                        state = dst;
-                    }
-                    Op::Invoke(ref actions) => {
-                        debug!("  invoking actions; state={}", state);
-                        for &action in actions {
-                            self.actions[action](s);
-                        }
-                        state += 1;
-                    }
-                    Op::Terminal => {
-                        debug!("  unexpected terminal; state={}", state);
-                        // Not expecting a terminal
-                        return false;
-                    }
-                    _ => {
-                        panic!("oh noes, we haz a bug: unexpected op in automaton");
-                    }
-                }
-            }
-        }
-
-        // Handle exit
-        loop {
-            match self.ops[state] {
-                Op::Lookup(_, term) => {
-                    if term == INVALID {
-                        debug!("  invalid termination state; state={}", state);
-                        return false;
-                    }
-
-                    debug!("");
-
-                    state = term;
-                }
-                Op::Jump(dst) => {
-                    debug!("  state={}; jump={}", state, dst);
-                    state = dst;
-                }
-                Op::Invoke(ref actions) => {
-                    debug!("  invoking actions; state={}", state);
-                    for &action in actions {
-                        self.actions[action](s);
-                    }
-                    state += 1;
-                }
-                Op::Terminal => {
-                    debug!("  terminal -- ending; state={}", state);
-                    return true;
-                }
-                _ => {
-                    panic!("oh noes, we haz a bug: unexpected op in automaton");
-                }
-            }
-        }
+                  J: Input<T>
+    {
+        self.try_eval(s, input.map(Ok)).expect("can't be err")
     }
 
     pub fn try_eval<I, J>(&self, s: &mut S, input: I) -> Result<bool, ::std::io::CharsError>

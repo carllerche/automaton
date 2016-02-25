@@ -1,6 +1,6 @@
 // use {info, Dfa, Token, Input};
 use core::{Action, Dfa, Token, Transition, Letter, Input, State};
-use std::{cmp, fmt, iter, usize};
+use std::{cmp, fmt, iter, io, usize};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::marker::PhantomData;
@@ -37,13 +37,21 @@ impl<T: Token, S> From<Dfa<S>> for Automaton<T, S> {
 impl<T: Token, S> Automaton<T, S> {
     pub fn eval<I, J>(&self, s: &mut S, input: I) -> bool
             where I: Iterator<Item=J>,
-                  J: Input<T> {
+                  J: Input<T>
+    {
+        self.eval_io(s, input.map(Ok)).expect("can't be err")
+    }
 
+    pub fn eval_io<I, J>(&self, s: &mut S, input: I) -> Result<bool, io::Error>
+        where I: Iterator<Item=Result<J, io::Error>>,
+              J: Input<T>
+    {
         let mut state = self.enter;
 
         debug!("EVAL; state={}", state);
 
         for val in input {
+            let val = try!(val);
             debug!("  input={}", val.as_u32());
 
             loop {
@@ -57,7 +65,7 @@ impl<T: Token, S> Automaton<T, S> {
                             }
                             None => {
                                 debug!("  matching input; state={}; FAIL", state);
-                                return false;
+                                return Ok(false);
                             }
                         }
                     }
@@ -75,7 +83,7 @@ impl<T: Token, S> Automaton<T, S> {
                     Op::Terminal => {
                         debug!("  unexpected terminal; state={}", state);
                         // Not expecting a terminal
-                        return false;
+                        return Ok(false);
                     }
                     _ => {
                         panic!("oh noes, we haz a bug: unexpected op in automaton");
@@ -90,7 +98,7 @@ impl<T: Token, S> Automaton<T, S> {
                 Op::Lookup(_, term) => {
                     if term == INVALID {
                         debug!("  invalid termination state; state={}", state);
-                        return false;
+                        return Ok(false);
                     }
 
                     debug!("");
@@ -110,7 +118,7 @@ impl<T: Token, S> Automaton<T, S> {
                 }
                 Op::Terminal => {
                     debug!("  terminal -- ending; state={}", state);
-                    return true;
+                    return Ok(true);
                 }
                 _ => {
                     panic!("oh noes, we haz a bug: unexpected op in automaton");

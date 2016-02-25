@@ -19,6 +19,9 @@ exclude       = [
 [features]
 bench = []
 
+[dependencies]
+log = "0.3.5"
+
 [dev-dependencies]
 regex = "0.1.29"
 
